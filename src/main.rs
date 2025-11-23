@@ -1,6 +1,7 @@
 use std::io::{self, Write};
 
 mod color;
+mod ray;
 mod vec3;
 
 use color::Color;
