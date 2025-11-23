@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+mod vec3;
 
 fn main() {
     // Image
