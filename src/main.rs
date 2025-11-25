@@ -9,27 +9,15 @@ mod vec3;
 
 use color::Color;
 
+use crate::hittable::Hittable;
+use crate::hittable_list::HittableList;
 use crate::ray::Ray;
+use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
 
-fn hit_sphere(center: Point3, radius: f64, r: &Ray) -> Option<f64> {
-    let oc: Vec3 = center - r.orig;
-    let a = r.dir.length_squared();
-    let h = r.dir.dot(oc);
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = h * h - a * c;
-
-    if discriminant <= 0.0 {
-        None
-    } else {
-        Some((h - discriminant.sqrt()) / a)
-    }
-}
-
-fn ray_color(r: &Ray) -> Color {
-    if let Some(t) = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, r) {
-        let n = (r.at(t) - Vec3::new(0.0, 0.0, -1.0)).unit_vector();
-        return 0.5 * Color::new(n.x + 1.0, n.y + 1.0, n.z + 1.0);
+fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    if let Some(rec) = world.hit(r, 0.0, f64::INFINITY) {
+        return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
     }
 
     let unit_direction = r.dir.unit_vector();
@@ -45,6 +33,13 @@ fn main() {
 
     // Calculate the image height, and ensure that it's at least 1.
     let image_height = ((image_width as f64) / aspect_ratio) as usize;
+
+    // World
+
+    let mut world = HittableList::new();
+
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
 
@@ -80,7 +75,7 @@ fn main() {
 
             let r = Ray::new(camera_center, ray_direction);
 
-            let pixel_color = ray_color(&r);
+            let pixel_color = ray_color(&r, &world);
 
             color::write_color(&pixel_color);
         }
