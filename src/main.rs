@@ -3,6 +3,7 @@ use std::io::{self, Write};
 mod color;
 mod hittable;
 mod hittable_list;
+mod interval;
 mod ray;
 mod sphere;
 mod vec3;
@@ -11,12 +12,13 @@ use color::Color;
 
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
+use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
 
 fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
-    if let Some(rec) = world.hit(r, 0.0, f64::INFINITY) {
+    if let Some(rec) = world.hit(r, Interval::new(0.0, f64::INFINITY)) {
         return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
     }
 
