@@ -105,6 +105,10 @@ impl Vec3 {
 
         self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
     }
+
+    pub fn reflect(self, n: Vec3) -> Self {
+        self - 2.0 * self.dot(n) * n
+    }
 }
 
 // Overload operators
