@@ -10,15 +10,19 @@ use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 pub struct Camera {
-    image_width: usize,       // Rendered image width in pixel count
-    image_height: usize,      // Rendered image height
-    center: Point3,           // Camera center
+    aspect_ratio: f64,
+    image_width: usize,  // Rendered image width in pixel count
+    image_height: usize, // Rendered image height
+    vfov: f64,           // Vertical view angle (field of view)
+
     samples_per_pixel: usize, // Count of random samples for each pixel
-    max_depth: usize,         // Maximum number of ray bounces into scene
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
-    pixel00_loc: Point3,      // Location of pixle 0, 0
-    pixel_delta_u: Vec3,      // Offset to pixel to the right
-    pixel_delta_v: Vec3,      // Offset to pixel below
+    max_depth: usize,         // Maximum number of ray bounces into scene
+
+    center: Point3,      // Camera center
+    pixel00_loc: Point3, // Location of pixle 0, 0
+    pixel_delta_u: Vec3, // Offset to pixel to the right
+    pixel_delta_v: Vec3, // Offset to pixel below
 }
 
 impl Camera {
@@ -27,6 +31,7 @@ impl Camera {
         image_width: usize,
         samples_per_pixel: usize,
         max_depth: usize,
+        vfov: f64,
     ) -> Self {
         let calculated_height = ((image_width as f64) / aspect_ratio) as usize;
         let image_height = calculated_height.max(1);
@@ -35,7 +40,9 @@ impl Camera {
 
         // Determine viewport dimensions.
         let focal_length = 1.0;
-        let viewport_height = 2.0;
+        let theta = vfov.to_radians();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
 
         // Calculate color scale factor for a sum of pixel samples
@@ -55,11 +62,15 @@ impl Camera {
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
         Self {
+            aspect_ratio,
             image_width,
             image_height,
+            vfov,
+
             samples_per_pixel,
             pixel_samples_scale,
             max_depth,
+
             center,
             pixel00_loc,
             pixel_delta_u,
