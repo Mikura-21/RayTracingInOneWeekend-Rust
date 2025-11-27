@@ -7,9 +7,9 @@ pub fn write_color(pixel_color: &Color) {
     let g = pixel_color.y;
     let b = pixel_color.z;
 
-    let ir = (255.999 * r) as i32;
-    let ig = (255.999 * g) as i32;
-    let ib = (255.999 * b) as i32;
+    let ir = (256.0 * r.clamp(0.0, 0.999)) as i32;
+    let ig = (256.0 * g.clamp(0.0, 0.999)) as i32;
+    let ib = (256.0 * b.clamp(0.0, 0.999)) as i32;
 
     println!("{} {} {}", ir, ig, ib);
 }

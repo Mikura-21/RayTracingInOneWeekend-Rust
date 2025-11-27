@@ -1,3 +1,5 @@
+use rand::rngs::SmallRng;
+use rand::{Rng, SeedableRng};
 use std::io::{self, Write};
 
 use crate::color;
@@ -8,16 +10,18 @@ use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 pub struct Camera {
-    image_width: usize,  // Rendered image width in pixel count
-    image_height: usize, // Rendered image height
-    center: Point3,      // Camera center
-    pixel00_loc: Point3, // Location of pixle 0, 0
-    pixel_delta_u: Vec3, // Offset to pixel to the right
-    pixel_delta_v: Vec3, // Offset to pixel below
+    image_width: usize,       // Rendered image width in pixel count
+    image_height: usize,      // Rendered image height
+    center: Point3,           // Camera center
+    samples_per_pixel: usize, // Count of random samples for each pixel
+    pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
+    pixel00_loc: Point3,      // Location of pixle 0, 0
+    pixel_delta_u: Vec3,      // Offset to pixel to the right
+    pixel_delta_v: Vec3,      // Offset to pixel below
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f64, image_width: usize) -> Self {
+    pub fn new(aspect_ratio: f64, image_width: usize, samples_per_pixel: usize) -> Self {
         let calculated_height = ((image_width as f64) / aspect_ratio) as usize;
         let image_height = calculated_height.max(1);
 
@@ -27,6 +31,9 @@ impl Camera {
         let focal_length = 1.0;
         let viewport_height = 2.0;
         let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
+
+        // Calculate color scale factor for a sum of pixel samples
+        let pixel_samples_scale = 1.0 / samples_per_pixel as f64;
 
         // Calculate the vectors across the horizontal and down the vertical viewport edges.
         let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
@@ -44,6 +51,8 @@ impl Camera {
         Self {
             image_width,
             image_height,
+            samples_per_pixel,
+            pixel_samples_scale,
             center,
             pixel00_loc,
             pixel_delta_u,
@@ -54,20 +63,18 @@ impl Camera {
     pub fn render(&self, world: &dyn Hittable) {
         println!("P3\n{} {}\n255", self.image_width, self.image_height);
 
+        let mut rng = SmallRng::from_rng(&mut rand::rng());
+
         for j in 0..self.image_height {
             eprint!("\rScanlines remaining: {} ", self.image_height - j);
             io::stderr().flush().unwrap();
             for i in 0..self.image_width {
-                let pixel_center = self.pixel00_loc
-                    + (i as f64 * self.pixel_delta_u)
-                    + (j as f64 * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.center;
-
-                let r = Ray::new(self.center, ray_direction);
-
-                let pixel_color = Self::ray_color(&r, world);
-
-                color::write_color(&pixel_color);
+                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+                for _ in 0..self.samples_per_pixel {
+                    let r = self.get_ray(i, j, &mut rng);
+                    pixel_color += Self::ray_color(&r, world);
+                }
+                color::write_color(&(self.pixel_samples_scale * pixel_color));
             }
         }
         eprintln!("\nDone.                 ");
@@ -81,5 +88,28 @@ impl Camera {
         let unit_direction = r.dir.unit_vector();
         let a = 0.5 * (unit_direction.y + 1.0);
         (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
+    }
+
+    fn get_ray(&self, i: usize, j: usize, rng: &mut impl Rng) -> Ray {
+        // Construct a camera ray originating from the origin and directed at randomly sampled
+        // point around the pixel location i, j.
+
+        let offset = self.sample_square(rng);
+        let pixel_sample = self.pixel00_loc
+            + (i as f64 + offset.x) * self.pixel_delta_u
+            + (j as f64 + offset.y) * self.pixel_delta_v;
+        let ray_origin = self.center;
+        let ray_direction = pixel_sample - ray_origin;
+
+        Ray::new(self.center, ray_direction)
+    }
+
+    fn sample_square(&self, rng: &mut impl Rng) -> Vec3 {
+        // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+        Vec3::new(
+            rng.random_range(-0.5..0.5),
+            rng.random_range(-0.5..0.5),
+            0.0,
+        )
     }
 }
