@@ -1,6 +1,7 @@
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use rand::Rng;
 use rand::rngs::SmallRng;
 
 pub trait Material {
@@ -85,7 +86,9 @@ impl Material for Dielectric {
 
         let cannot_refract = ri * sin_theta > 1.0;
 
-        let direction = if cannot_refract {
+        let direction = if cannot_refract
+            || Dielectric::reflectance(cos_theta, ri) > rng.random_range(0.0..1.0)
+        {
             unit_direction.reflect(rec.normal)
         } else {
             unit_direction.refract(rec.normal, ri)
@@ -94,5 +97,14 @@ impl Material for Dielectric {
         let scattered = Ray::new(rec.p, direction);
 
         Some((attenuation, scattered))
+    }
+}
+
+impl Dielectric {
+    fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
+        // Use Schlick's approximation for reflectance.
+        let r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+        let r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
     }
 }
