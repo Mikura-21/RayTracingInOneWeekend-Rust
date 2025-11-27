@@ -15,24 +15,40 @@ use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::Sphere;
-use crate::vec3::Point3;
+use crate::vec3::{Point3, Vec3};
 
 fn main() {
     let mut world = HittableList::new();
 
-    let r = (std::f64::consts::PI / 4.0).cos();
-
-    let material_left = Rc::new(Lambertian::new(Color::new(0.0, 0.0, 1.0)));
-    let material_right = Rc::new(Lambertian::new(Color::new(1.0, 0.0, 0.0)));
+    let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left = Rc::new(Dielectric::new(1.50));
+    let material_bubble = Rc::new(Dielectric::new(1.00 / 1.50));
+    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     world.add(Box::new(Sphere::new(
-        Point3::new(-r, 0.0, -1.0),
-        r,
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground,
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 0.0, -1.2),
+        0.5,
+        material_center,
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.5,
         material_left,
     )));
     world.add(Box::new(Sphere::new(
-        Point3::new(r, 0.0, -1.0),
-        r,
+        Point3::new(-1.0, 0.0, -1.0),
+        0.4,
+        material_bubble,
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(1.0, 0.0, -1.0),
+        0.5,
         material_right,
     )));
 
@@ -40,7 +56,11 @@ fn main() {
     let image_width: usize = 400;
     let samples_per_pixel: usize = 100;
     let max_depth: usize = 50;
-    let vfov = 90.0;
+
+    let vfov = 20.0;
+    let lookfrom = Point3::new(-2.0, 2.0, 1.0);
+    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
 
     let camera = Camera::new(
         aspect_ratio,
@@ -48,6 +68,9 @@ fn main() {
         samples_per_pixel,
         max_depth,
         vfov,
+        lookfrom,
+        lookat,
+        vup,
     );
 
     camera.render(&world);
