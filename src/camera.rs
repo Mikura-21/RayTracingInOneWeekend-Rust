@@ -14,6 +14,7 @@ pub struct Camera {
     image_height: usize,      // Rendered image height
     center: Point3,           // Camera center
     samples_per_pixel: usize, // Count of random samples for each pixel
+    max_depth: usize,         // Maximum number of ray bounces into scene
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
     pixel00_loc: Point3,      // Location of pixle 0, 0
     pixel_delta_u: Vec3,      // Offset to pixel to the right
@@ -21,7 +22,12 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f64, image_width: usize, samples_per_pixel: usize) -> Self {
+    pub fn new(
+        aspect_ratio: f64,
+        image_width: usize,
+        samples_per_pixel: usize,
+        max_depth: usize,
+    ) -> Self {
         let calculated_height = ((image_width as f64) / aspect_ratio) as usize;
         let image_height = calculated_height.max(1);
 
@@ -53,6 +59,7 @@ impl Camera {
             image_height,
             samples_per_pixel,
             pixel_samples_scale,
+            max_depth,
             center,
             pixel00_loc,
             pixel_delta_u,
@@ -72,7 +79,7 @@ impl Camera {
                 let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j, &mut rng);
-                    pixel_color += Self::ray_color(&r, world, &mut rng);
+                    pixel_color += Self::ray_color(&r, self.max_depth, world, &mut rng);
                 }
                 color::write_color(&(self.pixel_samples_scale * pixel_color));
             }
@@ -80,10 +87,15 @@ impl Camera {
         eprintln!("\nDone.                 ");
     }
 
-    fn ray_color(r: &Ray, world: &dyn Hittable, rng: &mut impl Rng) -> Color {
+    fn ray_color(r: &Ray, depth: usize, world: &dyn Hittable, rng: &mut SmallRng) -> Color {
+        // If we've exceeded the ray bounce limit, no more light is gathered.
+        if depth <= 0 {
+            return Color::zero();
+        }
+
         if let Some(rec) = world.hit(r, Interval::new(0.0, f64::INFINITY)) {
             let direction = Vec3::random_on_hemisphere(rng, rec.normal);
-            return 0.5 * Self::ray_color(&Ray::new(rec.p, direction), world, rng);
+            return 0.5 * Self::ray_color(&Ray::new(rec.p, direction), depth - 1, world, rng);
         }
 
         let unit_direction = r.dir.unit_vector();
@@ -91,7 +103,7 @@ impl Camera {
         (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
     }
 
-    fn get_ray(&self, i: usize, j: usize, rng: &mut impl Rng) -> Ray {
+    fn get_ray(&self, i: usize, j: usize, rng: &mut SmallRng) -> Ray {
         // Construct a camera ray originating from the origin and directed at randomly sampled
         // point around the pixel location i, j.
 
@@ -105,7 +117,7 @@ impl Camera {
         Ray::new(self.center, ray_direction)
     }
 
-    fn sample_square(&self, rng: &mut impl Rng) -> Vec3 {
+    fn sample_square(&self, rng: &mut SmallRng) -> Vec3 {
         // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
         Vec3::new(
             rng.random_range(-0.5..0.5),

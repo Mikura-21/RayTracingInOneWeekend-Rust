@@ -1,4 +1,5 @@
 use rand::Rng;
+use rand::rngs::SmallRng;
 use std::fmt;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -71,7 +72,7 @@ impl Vec3 {
         *self / self.length()
     }
 
-    pub fn random(rng: &mut impl Rng, min: f64, max: f64) -> Vec3 {
+    pub fn random(rng: &mut SmallRng, min: f64, max: f64) -> Vec3 {
         Vec3 {
             x: rng.random_range(min..max),
             y: rng.random_range(min..max),
@@ -79,7 +80,7 @@ impl Vec3 {
         }
     }
 
-    pub fn random_unit_vector(rng: &mut impl Rng) -> Vec3 {
+    pub fn random_unit_vector(rng: &mut SmallRng) -> Vec3 {
         loop {
             let p = Vec3::random(rng, -1.0, 1.0);
             let lensq = p.length_squared();
@@ -89,7 +90,7 @@ impl Vec3 {
         }
     }
 
-    pub fn random_on_hemisphere(rng: &mut impl Rng, normal: Vec3) -> Vec3 {
+    pub fn random_on_hemisphere(rng: &mut SmallRng, normal: Vec3) -> Vec3 {
         let on_unit_sphere = Vec3::random_unit_vector(rng);
         // In the same hemisphere as the normal
         if on_unit_sphere.dot(normal) > 0.0 {
