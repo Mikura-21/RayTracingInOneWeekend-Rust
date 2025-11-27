@@ -90,6 +90,19 @@ impl Vec3 {
         }
     }
 
+    pub fn random_in_unit_disk(rng: &mut SmallRng) -> Vec3 {
+        loop {
+            let p = Vec3::new(
+                rng.random_range(-1.0..1.0),
+                rng.random_range(-1.0..1.0),
+                0.0,
+            );
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
+    }
+
     pub fn random_on_hemisphere(rng: &mut SmallRng, normal: Vec3) -> Vec3 {
         let on_unit_sphere = Vec3::random_unit_vector(rng);
         // In the same hemisphere as the normal
