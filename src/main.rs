@@ -2,6 +2,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 use std::rc::Rc;
 
+mod aabb;
 mod camera;
 mod color;
 mod hittable;

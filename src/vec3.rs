@@ -43,6 +43,15 @@ impl Vec3 {
         }
     }
 
+    pub fn axis(&self, axis: usize) -> f64 {
+        match axis {
+            0 => self.x,
+            1 => self.y,
+            2 => self.z,
+            _ => panic!("axis must be 0, 1, or 2, got {axis}"),
+        }
+    }
+
     // class vec3 { public: double length_squared() const {}};
     pub fn length_squared(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
