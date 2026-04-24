@@ -36,6 +36,14 @@ impl Aabb {
         }
     }
 
+    pub fn enclosing(box0: Aabb, box1: Aabb) -> Self {
+        Self {
+            x: Interval::enclosing(box0.x, box1.x),
+            y: Interval::enclosing(box0.y, box1.y),
+            z: Interval::enclosing(box0.z, box1.z),
+        }
+    }
+
     pub fn axis_interval(&self, n: usize) -> Interval {
         match n {
             0 => self.x,

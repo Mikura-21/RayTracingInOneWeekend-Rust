@@ -8,7 +8,14 @@ impl Interval {
     pub fn new(min: f64, max: f64) -> Self {
         Self { min, max }
     }
-    
+
+    pub fn enclosing(a: Self, b: Self) -> Self {
+        Self {
+            min: a.min.min(b.min),
+            max: a.max.max(b.max),
+        }
+    }
+
     pub fn expand(&self, delta: f64) -> Self {
         let padding = delta / 2.0;
         Self {
