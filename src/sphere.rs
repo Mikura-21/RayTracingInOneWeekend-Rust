@@ -1,21 +1,19 @@
-use std::rc::Rc;
-
 use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
-use crate::material::Material;
+use crate::material::MaterialPtr;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 pub struct Sphere {
     pub center: Ray,
     pub radius: f64,
-    pub mat: Rc<dyn Material>,
+    pub mat: MaterialPtr,
     bbox: Aabb,
 }
 
 impl Sphere {
-    pub fn new(center: Ray, radius: f64, mat: Rc<dyn Material>, bbox: Aabb) -> Self {
+    pub fn new(center: Ray, radius: f64, mat: MaterialPtr, bbox: Aabb) -> Self {
         Sphere {
             center,
             radius: radius.max(0.0),
@@ -25,7 +23,7 @@ impl Sphere {
     }
 
     // Stationary Sphere
-    pub fn new_stationary(static_center: Point3, radius: f64, mat: Rc<dyn Material>) -> Self {
+    pub fn new_stationary(static_center: Point3, radius: f64, mat: MaterialPtr) -> Self {
         let rvec = Vec3::new(radius, radius, radius);
         Sphere {
             center: Ray::new(static_center, Vec3::new(0.0, 0.0, 0.0), 0.0),
@@ -36,12 +34,7 @@ impl Sphere {
     }
 
     // Moving Sphere
-    pub fn new_moving(
-        center1: Point3,
-        center2: Point3,
-        radius: f64,
-        mat: Rc<dyn Material>,
-    ) -> Self {
+    pub fn new_moving(center1: Point3, center2: Point3, radius: f64, mat: MaterialPtr) -> Self {
         let rvec = Vec3::new(radius, radius, radius);
         let box1 = Aabb::from_points(center1 - rvec, center1 + rvec);
         let box2 = Aabb::from_points(center2 - rvec, center2 + rvec);

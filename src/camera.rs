@@ -1,5 +1,5 @@
 use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 use std::io::{self, Write};
 
 use crate::color;

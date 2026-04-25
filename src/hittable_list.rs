@@ -1,10 +1,10 @@
 use crate::aabb::Aabb;
-use crate::hittable::{HitRecord, Hittable};
+use crate::hittable::{HitRecord, Hittable, HittablePtr};
 use crate::interval::Interval;
 use crate::ray::Ray;
 
 pub struct HittableList {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<HittablePtr>,
     bbox: Aabb,
 }
 
@@ -16,7 +16,7 @@ impl HittableList {
         }
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: HittablePtr) {
         self.bbox = Aabb::enclosing(self.bbox, object.bounding_box());
         self.objects.push(object);
     }
@@ -40,7 +40,7 @@ impl Hittable for HittableList {
 
         hit_record
     }
-    
+
     fn bounding_box(&self) -> Aabb {
         self.bbox
     }

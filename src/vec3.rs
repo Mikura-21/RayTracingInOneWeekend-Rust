@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::RngExt;
 use rand::rngs::SmallRng;
 use std::fmt;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};

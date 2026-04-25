@@ -1,8 +1,12 @@
+use std::sync::Arc;
+
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
-use rand::Rng;
+use rand::RngExt;
 use rand::rngs::SmallRng;
+
+pub type MaterialPtr = Arc<dyn Material + Send + Sync>;
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut SmallRng) -> Option<(Color, Ray)>;
