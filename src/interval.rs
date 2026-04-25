@@ -5,6 +5,16 @@ pub struct Interval {
 }
 
 impl Interval {
+    pub const EMPTY: Self = Self {
+        min: f64::INFINITY,
+        max: f64::NEG_INFINITY,
+    };
+
+    pub const UNIVERSE: Self = Self {
+        min: f64::NEG_INFINITY,
+        max: f64::INFINITY,
+    };
+
     pub fn new(min: f64, max: f64) -> Self {
         Self { min, max }
     }
@@ -21,20 +31,6 @@ impl Interval {
         Self {
             min: self.min - padding,
             max: self.max + padding,
-        }
-    }
-
-    pub fn empty() -> Self {
-        Self {
-            min: f64::INFINITY,
-            max: f64::NEG_INFINITY,
-        }
-    }
-
-    pub fn universe() -> Self {
-        Self {
-            min: f64::NEG_INFINITY,
-            max: f64::INFINITY,
         }
     }
 

@@ -10,6 +10,12 @@ pub struct Aabb {
 }
 
 impl Aabb {
+    pub const EMPTY: Self = Self {
+        x: Interval::EMPTY,
+        y: Interval::EMPTY,
+        z: Interval::EMPTY,
+    };
+
     pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
         Self { x, y, z }
     }
