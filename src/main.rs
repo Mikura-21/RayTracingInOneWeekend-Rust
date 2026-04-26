@@ -20,6 +20,7 @@ use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
+use crate::bvh::BvhNode;
 
 fn main() {
     let mut world = HittableList::new();
@@ -98,6 +99,9 @@ fn main() {
         1.0,
         material3,
     )));
+    
+    let world = BvhNode::from_list(world, &mut rng);
+    
 
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;

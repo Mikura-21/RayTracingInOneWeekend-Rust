@@ -68,3 +68,10 @@ impl Hittable for BvhNode {
         self.bbox
     }
 }
+
+fn box_compare(a: &HittablePtr, b: &HittablePtr, axis: usize) -> Ordering {
+    let b_axis = a.bounding_box().axis_interval(axis).min;
+    let a_axis = b.bounding_box().axis_interval(axis).min;
+
+    a_axis.partial_cmp(&b_axis).unwrap_or(Ordering::Equal)
+}
