@@ -1,3 +1,7 @@
+use rand::{Rng, RngExt};
+use std::cmp::Ordering;
+use std::sync::Arc;
+
 use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable, HittablePtr};
 use crate::hittable_list::HittableList;
@@ -11,13 +15,36 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-    pub fn from_list(list: HittableList) -> Self {
+    pub fn from_list(list: HittableList, rng: &mut impl Rng) -> Self {
         let mut objects = list.objects;
-        Self::from_objects(&mut objects)
+        Self::from_objects(&mut objects, rng)
     }
 
-    pub fn from_objects(objects: &mut [HittablePtr]) -> Self {
-        todo!()
+    pub fn from_objects(objects: &mut [HittablePtr], rng: &mut impl Rng) -> Self {
+        let axis = rng.random_range(0..3);
+
+        objects.sort_by(|a, b| box_compare(a, b, axis));
+
+        let object_span = objects.len();
+
+        let (left, right): (HittablePtr, HittablePtr) = match object_span {
+            1 => {
+                let obj = Arc::clone(&objects[0]);
+                (Arc::clone(&obj), obj)
+            }
+            2 => (Arc::clone(&objects[0]), Arc::clone(&objects[1])),
+            _ => {
+                let mid = object_span / 2;
+                (
+                    Arc::new(Self::from_objects(&mut objects[..mid], rng)),
+                    Arc::new(Self::from_objects(&mut objects[mid..], rng)),
+                )
+            }
+        };
+
+        let bbox = Aabb::enclosing(left.bounding_box(), right.bounding_box());
+
+        Self { left, right, bbox }
     }
 }
 
