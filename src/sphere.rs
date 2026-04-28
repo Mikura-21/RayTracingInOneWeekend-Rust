@@ -74,8 +74,17 @@ impl Hittable for Sphere {
 
         let t = root;
         let p = r.at(t);
+        let (u, v) = (0.0, 0.0); // TODO: UV coordinates
         let outward_normal = (p - current_center) / self.radius;
-        Some(HitRecord::new(p, t, r, outward_normal, self.mat.clone()))
+        Some(HitRecord::new(
+            p,
+            t,
+            u,
+            v,
+            r,
+            outward_normal,
+            self.mat.clone(),
+        ))
     }
 
     fn bounding_box(&self) -> Aabb {
