@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 rand = { version = "0.10.1" }
+image = "0.25"

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::color::Color;
+use crate::rtw_image::RtwImage;
 use crate::vec3::Point3;
 
 pub trait Texture: Send + Sync {
@@ -68,5 +69,41 @@ impl Texture for CheckerTexture {
         } else {
             self.odd.value(u, v, p)
         }
+    }
+}
+
+pub struct ImageTexture {
+    image: RtwImage,
+}
+
+impl ImageTexture {
+    pub fn new(filename: &str) -> Self {
+        Self {
+            image: RtwImage::new(filename),
+        }
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f64, v: f64, _p: Point3) -> Color {
+        // If we hae no texture data, then return solid cyan as a debugging aid.
+        if self.image.height() == 0 {
+            return Color::new(0.0, 1.0, 1.0);
+        }
+        
+        // Clamp input texture coordinates to [0,1] x [1,0]
+        let u = u.clamp(0.0, 1.0);
+        let v = 1.0 - v.clamp(0.0, 1.0); // Flip V to image coordinates
+        
+        let i = (u * self.image.width() as f64) as u32;
+        let j = (v * self.image.height() as f64) as u32;
+        let pixel = self.image.pixel_data(i, j);
+        
+        let color_scale = 1.0 / 255.0;
+        Color::new(
+            color_scale * pixel[0] as f64,
+            color_scale * pixel[1] as f64,
+            color_scale * pixel[2] as f64,
+        )
     }
 }

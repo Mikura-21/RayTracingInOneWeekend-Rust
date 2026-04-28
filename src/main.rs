@@ -14,6 +14,7 @@ mod ray;
 mod sphere;
 mod texture;
 mod vec3;
+mod rtw_image;
 
 use crate::bvh::BvhNode;
 use crate::camera::Camera;
