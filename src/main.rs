@@ -22,8 +22,9 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Metal};
+use crate::perlin::Perlin;
 use crate::sphere::Sphere;
-use crate::texture::{CheckerTexture, ImageTexture, Texture};
+use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture, Texture};
 use crate::vec3::{Point3, Vec3};
 
 fn bouncing_spheres() {
@@ -224,11 +225,59 @@ fn earth() {
     cam.render(&globe);
 }
 
+fn perlin_spheres() {
+    let mut rng = SmallRng::from_rng(&mut rand::rng());
+
+    let mut world = HittableList::new();
+
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(Perlin::new(&mut rng)));
+
+    world.add(Arc::new(Sphere::new_stationary(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::from_texture(Arc::clone(&pertext))),
+    )));
+    world.add(Arc::new(Sphere::new_stationary(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::from_texture(pertext)),
+    )));
+
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width: usize = 400;
+    let samples_per_pixel: usize = 100;
+    let max_depth: usize = 50;
+
+    let vfov = 20.0;
+    let lookfrom = Point3::new(13.0, 2.0, 3.0);
+    let lookat = Point3::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+
+    let defocus_angle = 0.0;
+    let focus_dist = 10.0;
+
+    let cam = Camera::new(
+        aspect_ratio,
+        image_width,
+        samples_per_pixel,
+        max_depth,
+        vfov,
+        lookfrom,
+        lookat,
+        vup,
+        defocus_angle,
+        focus_dist,
+    );
+
+    cam.render(&world);
+}
+
 fn main() {
-    match 3 {
+    match 4 {
         1 => bouncing_spheres(),
         2 => checkered_spheres(),
         3 => earth(),
+        4 => perlin_spheres(),
         _ => {}
     }
 }

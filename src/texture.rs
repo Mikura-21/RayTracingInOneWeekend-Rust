@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::color::Color;
+use crate::perlin::Perlin;
 use crate::rtw_image::RtwImage;
 use crate::vec3::Point3;
 
@@ -106,5 +107,21 @@ impl Texture for ImageTexture {
         let b = color_scale * pixel[2] as f64;
         // Convert texture color from gamma space to linear space.
         Color::new(r * r, g * g, b * b)
+    }
+}
+
+pub struct NoiseTexture {
+    noise: Perlin,
+}
+
+impl NoiseTexture {
+    pub fn new(noise: Perlin) -> Self {
+        Self { noise }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
     }
 }
