@@ -21,19 +21,25 @@ use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::Sphere;
+use crate::texture::CheckerTexture;
 use crate::vec3::{Point3, Vec3};
 
 fn main() {
+    let mut rng = SmallRng::from_rng(&mut rand::rng());
+
     let mut world = HittableList::new();
 
-    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Arc::new(CheckerTexture::from_colors(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+
     world.add(Arc::new(Sphere::new_stationary(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        ground_material,
+        Arc::new(Lambertian::from_texture(checker)),
     )));
-
-    let mut rng = SmallRng::from_rng(&mut rand::rng());
 
     for a in -11..11 {
         for b in -11..11 {

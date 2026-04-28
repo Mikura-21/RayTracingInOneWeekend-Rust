@@ -6,6 +6,8 @@ use crate::ray::Ray;
 use rand::RngExt;
 use rand::rngs::SmallRng;
 
+use crate::texture::{SolidColor, TexturePtr};
+
 pub type MaterialPtr = Arc<dyn Material + Send + Sync>;
 
 pub trait Material {
@@ -13,12 +15,18 @@ pub trait Material {
 }
 
 pub struct Lambertian {
-    pub albedo: Color,
+    tex: TexturePtr,
 }
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+        Self {
+            tex: Arc::new(SolidColor::new(albedo)),
+        }
+    }
+    
+    pub fn from_texture(tex: TexturePtr) -> Self {
+        Self { tex }
     }
 }
 
@@ -32,7 +40,7 @@ impl Material for Lambertian {
         }
 
         let scattered = Ray::new(rec.p, scatter_direction, r_in.time);
-        let attenuation = self.albedo;
+        let attenuation = self.tex.value(rec.u, rec.v, rec.p);
 
         Some((attenuation, scattered))
     }
