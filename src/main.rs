@@ -10,6 +10,7 @@ mod hittable;
 mod hittable_list;
 mod interval;
 mod material;
+mod perlin;
 mod ray;
 mod rtw_image;
 mod sphere;
@@ -108,7 +109,7 @@ fn bouncing_spheres() {
         material3,
     )));
 
-    let world = BvhNode::from_list(world, &mut rng);
+    let world = BvhNode::from_list(world);
 
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;
@@ -192,11 +193,7 @@ fn checkered_spheres() {
 fn earth() {
     let earth_texture = Arc::new(ImageTexture::new("earthmap.jpg"));
     let earth_surface = Arc::new(Lambertian::from_texture(earth_texture));
-    let globe = Sphere::new_stationary(
-        Point3::new(0.0, 0.0, 0.0),
-        2.0,
-        earth_surface,
-    );
+    let globe = Sphere::new_stationary(Point3::new(0.0, 0.0, 0.0), 2.0, earth_surface);
 
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;

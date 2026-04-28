@@ -1,4 +1,3 @@
-use rand::Rng;
 use std::cmp::Ordering;
 use std::sync::Arc;
 
@@ -15,12 +14,12 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-    pub fn from_list(list: HittableList, rng: &mut impl Rng) -> Self {
+    pub fn from_list(list: HittableList) -> Self {
         let mut objects = list.objects;
-        Self::from_objects(&mut objects, rng)
+        Self::from_objects(&mut objects)
     }
 
-    pub fn from_objects(objects: &mut [HittablePtr], rng: &mut impl Rng) -> Self {
+    pub fn from_objects(objects: &mut [HittablePtr]) -> Self {
         let mut bbox = Aabb::EMPTY;
         for object in objects.iter() {
             bbox = Aabb::enclosing(bbox, object.bounding_box());
@@ -41,8 +40,8 @@ impl BvhNode {
             _ => {
                 let mid = object_span / 2;
                 (
-                    Arc::new(Self::from_objects(&mut objects[..mid], rng)),
-                    Arc::new(Self::from_objects(&mut objects[mid..], rng)),
+                    Arc::new(Self::from_objects(&mut objects[..mid])),
+                    Arc::new(Self::from_objects(&mut objects[mid..])),
                 )
             }
         };
