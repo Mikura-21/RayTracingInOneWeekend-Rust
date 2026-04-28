@@ -21,7 +21,12 @@ impl BvhNode {
     }
 
     pub fn from_objects(objects: &mut [HittablePtr], rng: &mut impl Rng) -> Self {
-        let axis = rng.random_range(0..3);
+        let mut bbox = Aabb::EMPTY;
+        for object in objects.iter() {
+            bbox = Aabb::enclosing(bbox, object.bounding_box());
+        }
+        
+        let axis = bbox.longest_axis();
 
         objects.sort_by(|a, b| box_compare(a, b, axis));
 
@@ -41,8 +46,6 @@ impl BvhNode {
                 )
             }
         };
-
-        let bbox = Aabb::enclosing(left.bounding_box(), right.bounding_box());
 
         Self { left, right, bbox }
     }
