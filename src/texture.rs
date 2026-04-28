@@ -90,20 +90,21 @@ impl Texture for ImageTexture {
         if self.image.height() == 0 {
             return Color::new(0.0, 1.0, 1.0);
         }
-        
+
         // Clamp input texture coordinates to [0,1] x [1,0]
         let u = u.clamp(0.0, 1.0);
         let v = 1.0 - v.clamp(0.0, 1.0); // Flip V to image coordinates
-        
+
         let i = (u * self.image.width() as f64) as u32;
         let j = (v * self.image.height() as f64) as u32;
         let pixel = self.image.pixel_data(i, j);
-        
+
         let color_scale = 1.0 / 255.0;
-        Color::new(
-            color_scale * pixel[0] as f64,
-            color_scale * pixel[1] as f64,
-            color_scale * pixel[2] as f64,
-        )
+
+        let r = color_scale * pixel[0] as f64;
+        let g = color_scale * pixel[1] as f64;
+        let b = color_scale * pixel[2] as f64;
+        // Convert texture color from gamma space to linear space.
+        Color::new(r * r, g * g, b * b)
     }
 }

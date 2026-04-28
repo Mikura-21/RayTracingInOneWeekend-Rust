@@ -1,4 +1,4 @@
-use rand::{Rng, RngExt};
+use rand::Rng;
 use std::cmp::Ordering;
 use std::sync::Arc;
 
@@ -25,7 +25,7 @@ impl BvhNode {
         for object in objects.iter() {
             bbox = Aabb::enclosing(bbox, object.bounding_box());
         }
-        
+
         let axis = bbox.longest_axis();
 
         objects.sort_by(|a, b| box_compare(a, b, axis));
