@@ -21,10 +21,10 @@ use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::Sphere;
-use crate::texture::CheckerTexture;
+use crate::texture::{CheckerTexture, Texture};
 use crate::vec3::{Point3, Vec3};
 
-fn main() {
+fn bouncing_spheres() {
     let mut rng = SmallRng::from_rng(&mut rand::rng());
 
     let mut world = HittableList::new();
@@ -136,4 +136,62 @@ fn main() {
     );
 
     camera.render(&world);
+}
+
+fn checkered_spheres() {
+    let mut world = HittableList::new();
+
+    let checker: Arc<dyn Texture> = Arc::new(CheckerTexture::from_colors(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+
+    world.add(Arc::new(Sphere::new_stationary(
+        Point3::new(0.0, -10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::from_texture(Arc::clone(&checker))),
+    )));
+
+    world.add(Arc::new(Sphere::new_stationary(
+        Point3::new(0.0, 10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::from_texture(checker)),
+    )));
+
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width: usize = 400;
+    let samples_per_pixel: usize = 100;
+    let max_depth: usize = 50;
+
+    let vfov = 20.0;
+    let lookfrom = Point3::new(13.0, 2.0, 3.0);
+    let lookat = Point3::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+
+    let defocus_angle = 0.0;
+    let focus_dist = 10.0;
+
+    let cam = Camera::new(
+        aspect_ratio,
+        image_width,
+        samples_per_pixel,
+        max_depth,
+        vfov,
+        lookfrom,
+        lookat,
+        vup,
+        defocus_angle,
+        focus_dist,
+    );
+
+    cam.render(&world);
+}
+
+fn main() {
+    match 2 {
+        1 => bouncing_spheres(),
+        2 => checkered_spheres(),
+        _ => {}
+    }
 }
