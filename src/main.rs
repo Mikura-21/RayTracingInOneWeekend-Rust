@@ -230,7 +230,7 @@ fn perlin_spheres() {
 
     let mut world = HittableList::new();
 
-    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(Perlin::new(&mut rng)));
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(Perlin::new(&mut rng), 4.0));
 
     world.add(Arc::new(Sphere::new_stationary(
         Point3::new(0.0, -1000.0, 0.0),
