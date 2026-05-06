@@ -23,7 +23,7 @@ impl Aabb {
     };
 
     pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
-        Self { x, y, z }
+        Self { x, y, z }.padded_to_minimums()
     }
 
     pub fn from_points(a: Point3, b: Point3) -> Self {
@@ -45,7 +45,7 @@ impl Aabb {
             } else {
                 Interval::new(b.z, a.z)
             },
-        }
+        }.padded_to_minimums()
     }
 
     pub fn enclosing(box0: Aabb, box1: Aabb) -> Self {
@@ -103,5 +103,22 @@ impl Aabb {
                 2
             }
         }
+    }
+
+    fn padded_to_minimums(mut self) -> Self {
+        // Adjust the AABB so that no side is narrower than some delta, padding if necessary.
+
+        let delta = 0.0001;
+        if self.x.size() < delta {
+            self.x = self.x.expand(delta);
+        }
+        if self.y.size() < delta {
+            self.y = self.y.expand(delta);
+        }
+        if self.z.size() < delta {
+            self.z = self.z.expand(delta);
+        }
+
+        self
     }
 }
