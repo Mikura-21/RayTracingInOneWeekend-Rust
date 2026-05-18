@@ -42,6 +42,14 @@ impl Quad {
 
         Aabb::enclosing(bbox_diagonal1, bbox_diagonal2)
     }
+
+    fn is_interior(a: f64, b: f64) -> bool {
+        let unit_interval = Interval::new(0.0, 1.0);
+        // Given the hit point in plane coordinates, return false if it is outside the
+        // primitive, otherwise set the hit record UV coordinates and return true.
+
+        unit_interval.contains(a) && unit_interval.contains(b)
+    }
 }
 
 impl Hittable for Quad {
@@ -59,13 +67,22 @@ impl Hittable for Quad {
             return None;
         }
 
+        // Determine if the hit point lies within the planar shape using its plane coordinates.
         let intersection = r.at(t);
+        let planar_hitpt_vector = intersection - self.q;
+        let alpha = self.w.dot(planar_hitpt_vector.cross(self.v));
+        let beta = self.w.dot(self.u.cross(planar_hitpt_vector));
 
+        if !Self::is_interior(alpha, beta) {
+            return None;
+        }
+
+        // Ray hits the 2D shape; return Some(HitRecord)
         Some(HitRecord::new(
             intersection,
             t,
-            0.0,
-            0.0,
+            alpha,
+            beta,
             r,
             self.normal,
             Arc::clone(&self.mat),
