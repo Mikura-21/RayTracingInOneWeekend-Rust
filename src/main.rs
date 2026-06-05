@@ -22,7 +22,7 @@ use crate::bvh::BvhNode;
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
-use crate::material::{Dielectric, Lambertian, Metal};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, MaterialPtr, Metal};
 use crate::perlin::Perlin;
 use crate::quad::Quad;
 use crate::sphere::Sphere;
@@ -355,13 +355,76 @@ fn quads() {
     cam.render(&world);
 }
 
+fn simple_light() {
+    let mut rng = SmallRng::from_rng(&mut rand::rng());
+
+    let mut world = HittableList::new();
+
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(Perlin::new(&mut rng), 4.0));
+
+    world.add(Arc::new(Sphere::new_stationary(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::from_texture(Arc::clone(&pertext))),
+    )));
+    world.add(Arc::new(Sphere::new_stationary(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::from_texture(pertext)),
+    )));
+
+    let difflight = Arc::new(DiffuseLight::from_color(Color::new(4.0, 4.0, 4.0)));
+    world.add(Arc::new(Sphere::new_stationary(
+        Point3::new(0.0, 7.0, 0.0),
+        2.0,
+        difflight.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(3.0, 1.0, -2.0),
+        Vec3::new(2.0, 0.0, 0.0),
+        Vec3::new(0.0, 2.0, 0.0),
+        difflight,
+    )));
+
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width: usize = 400;
+    let samples_per_pixel: usize = 100;
+    let max_depth: usize = 50;
+    let background = Color::new(0.0, 0.0, 0.0);
+
+    let vfov = 20.0;
+    let lookfrom = Point3::new(26.0, 3.0, 6.0);
+    let lookat = Point3::new(0.0, 2.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+
+    let defocus_angle = 0.0;
+    let focus_dist = 10.0;
+
+    let cam = Camera::new(
+        aspect_ratio,
+        image_width,
+        samples_per_pixel,
+        max_depth,
+        background,
+        vfov,
+        lookfrom,
+        lookat,
+        vup,
+        defocus_angle,
+        focus_dist,
+    );
+
+    cam.render(&world);
+}
+
 fn main() {
-    match 5 {
+    match 6 {
         1 => bouncing_spheres(),
         2 => checkered_spheres(),
         3 => earth(),
         4 => perlin_spheres(),
         5 => quads(),
+        6 => simple_light(),
         _ => {}
     }
 }
