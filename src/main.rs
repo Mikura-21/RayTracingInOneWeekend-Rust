@@ -416,14 +416,91 @@ fn simple_light() {
     cam.render(&world);
 }
 
+fn cornell_box() {
+    let mut world = HittableList::new();
+
+    let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::from_color(Color::new(15.0, 15.0, 15.0)));
+
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        light,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 555.0, 555.0),
+        Vec3::new(-555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white,
+    )));
+
+    let aspect_ratio = 1.0;
+    let image_width: usize = 600;
+    let samples_per_pixel: usize = 200;
+    let max_depth: usize = 50;
+    let background = Color::new(0.0, 0.0, 0.0);
+
+    let vfov = 40.0;
+    let lookfrom = Point3::new(278.0, 278.0, -800.0);
+    let lookat = Point3::new(278.0, 278.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+
+    let defocus_angle = 0.0;
+    let focus_dist = 10.0;
+
+    let cam = Camera::new(
+        aspect_ratio,
+        image_width,
+        samples_per_pixel,
+        max_depth,
+        background,
+        vfov,
+        lookfrom,
+        lookat,
+        vup,
+        defocus_angle,
+        focus_dist,
+    );
+
+    cam.render(&world);
+}
+
 fn main() {
-    match 6 {
+    match 7 {
         1 => bouncing_spheres(),
         2 => checkered_spheres(),
         3 => earth(),
         4 => perlin_spheres(),
         5 => quads(),
         6 => simple_light(),
+        7 => cornell_box(),
         _ => {}
     }
 }
