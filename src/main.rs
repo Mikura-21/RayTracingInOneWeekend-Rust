@@ -118,6 +118,7 @@ fn bouncing_spheres() {
     let image_width: usize = 400;
     let samples_per_pixel: usize = 100;
     let max_depth: usize = 50;
+    let background = Color::new(0.70, 0.80, 1.00);
 
     let vfov = 20.0;
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -132,6 +133,7 @@ fn bouncing_spheres() {
         image_width,
         samples_per_pixel,
         max_depth,
+        background,
         vfov,
         lookfrom,
         lookat,
@@ -168,6 +170,7 @@ fn checkered_spheres() {
     let image_width: usize = 400;
     let samples_per_pixel: usize = 100;
     let max_depth: usize = 50;
+    let background = Color::new(0.70, 0.80, 1.00);
 
     let vfov = 20.0;
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -182,6 +185,7 @@ fn checkered_spheres() {
         image_width,
         samples_per_pixel,
         max_depth,
+        background,
         vfov,
         lookfrom,
         lookat,
@@ -202,6 +206,7 @@ fn earth() {
     let image_width: usize = 400;
     let samples_per_pixel: usize = 100;
     let max_depth: usize = 50;
+    let background = Color::new(0.70, 0.80, 1.00);
 
     let vfov = 20.0;
     let lookfrom = Point3::new(0.0, 0.0, 12.0);
@@ -216,6 +221,7 @@ fn earth() {
         image_width,
         samples_per_pixel,
         max_depth,
+        background,
         vfov,
         lookfrom,
         lookat,
@@ -249,6 +255,7 @@ fn perlin_spheres() {
     let image_width: usize = 400;
     let samples_per_pixel: usize = 100;
     let max_depth: usize = 50;
+    let background = Color::new(0.70, 0.80, 1.00);
 
     let vfov = 20.0;
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -263,6 +270,7 @@ fn perlin_spheres() {
         image_width,
         samples_per_pixel,
         max_depth,
+        background,
         vfov,
         lookfrom,
         lookat,
@@ -320,6 +328,7 @@ fn quads() {
     let image_width: usize = 400;
     let samples_per_pixel: usize = 100;
     let max_depth: usize = 50;
+    let background = Color::new(0.70, 0.80, 1.00);
 
     let vfov = 80.0;
     let lookfrom = Point3::new(0.0, 0.0, 9.0);
@@ -334,6 +343,7 @@ fn quads() {
         image_width,
         samples_per_pixel,
         max_depth,
+        background,
         vfov,
         lookfrom,
         lookat,

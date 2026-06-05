@@ -140,8 +140,10 @@ impl DiffuseLight {
             tex: Arc::new(SolidColor::new(color)),
         }
     }
+}
 
-    pub fn emitted(&self, u: f64, v: f64, p: Point3) -> Color {
+impl Material for DiffuseLight {
+    fn emitted(&self, u: f64, v: f64, p: Point3) -> Color {
         self.tex.value(u, v, p)
     }
 }

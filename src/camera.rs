@@ -25,6 +25,7 @@ pub struct Camera {
     samples_per_pixel: usize, // Count of random samples for each pixel
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
     max_depth: usize,         // Maximum number of ray bounces into scene
+    background: Color,        // Scene background color
 
     center: Point3,      // Camera center
     pixel00_loc: Point3, // Location of pixle 0, 0
@@ -46,6 +47,7 @@ impl Camera {
         image_width: usize,
         samples_per_pixel: usize,
         max_depth: usize,
+        background: Color,
         vfov: f64,
         lookfrom: Point3,
         lookat: Point3,
@@ -104,6 +106,7 @@ impl Camera {
             samples_per_pixel,
             pixel_samples_scale,
             max_depth,
+            background,
 
             center,
             pixel00_loc,
@@ -131,7 +134,7 @@ impl Camera {
                 let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j, &mut rng);
-                    pixel_color += Self::ray_color(&r, self.max_depth, world, &mut rng);
+                    pixel_color += Self::ray_color(self, &r, self.max_depth, world, &mut rng);
                 }
                 color::write_color(&(self.pixel_samples_scale * pixel_color));
             }
@@ -139,23 +142,26 @@ impl Camera {
         eprintln!("\nDone.                 ");
     }
 
-    fn ray_color(r: &Ray, depth: usize, world: &dyn Hittable, rng: &mut SmallRng) -> Color {
+    fn ray_color(&self, r: &Ray, depth: usize, world: &dyn Hittable, rng: &mut SmallRng) -> Color {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if depth <= 0 {
             return Color::zero();
         }
 
-        if let Some(rec) = world.hit(r, Interval::new(0.001, f64::INFINITY)) {
-            if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec, rng) {
-                return attenuation * Self::ray_color(&scattered, depth - 1, world, rng);
-            } else {
-                return Color::zero();
-            }
-        }
+        let Some(rec) = world.hit(r, Interval::new(0.001, f64::INFINITY)) else {
+            return self.background;
+        };
 
-        let unit_direction = r.dir.unit_vector();
-        let a = 0.5 * (unit_direction.y + 1.0);
-        (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
+        let color_from_emission = rec.mat.emitted(rec.u, rec.v, rec.p);
+
+        let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec, rng) else {
+            return color_from_emission;
+        };
+
+        let color_from_scatter =
+            attenuation * Self::ray_color(self, &scattered, depth - 1, world, rng);
+
+        return color_from_emission + color_from_scatter;
     }
 
     fn get_ray(&self, i: usize, j: usize, rng: &mut SmallRng) -> Ray {
