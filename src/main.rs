@@ -23,7 +23,7 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, MaterialPtr, Metal};
-use crate::quad::Quad;
+use crate::quad::{Quad, make_box};
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture, Texture};
 use crate::vec3::{Point3, Vec3};
@@ -458,7 +458,19 @@ fn cornell_box() {
         Point3::new(0.0, 0.0, 555.0),
         Vec3::new(555.0, 0.0, 0.0),
         Vec3::new(0.0, 555.0, 0.0),
-        white,
+        white.clone(),
+    )));
+
+    world.add(Arc::new(make_box(
+        Point3::new(130.0, 0.0, 65.0),
+        Point3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    )));
+
+    world.add(Arc::new(make_box(
+        Point3::new(265.0, 0.0, 295.0),
+        Point3::new(430.0, 330.0, 460.0),
+        white.clone(),
     )));
 
     let aspect_ratio = 1.0;
