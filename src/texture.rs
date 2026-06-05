@@ -1,3 +1,4 @@
+use rand::rngs::SmallRng;
 use std::sync::Arc;
 
 use crate::color::Color;
@@ -116,8 +117,11 @@ pub struct NoiseTexture {
 }
 
 impl NoiseTexture {
-    pub fn new(noise: Perlin, scale: f64) -> Self {
-        Self { noise, scale }
+    pub fn new(rng: &mut SmallRng, scale: f64) -> Self {
+        Self {
+            noise: Perlin::new(rng),
+            scale,
+        }
     }
 }
 

@@ -23,7 +23,6 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, MaterialPtr, Metal};
-use crate::perlin::Perlin;
 use crate::quad::Quad;
 use crate::sphere::Sphere;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture, Texture};
@@ -238,7 +237,7 @@ fn perlin_spheres() {
 
     let mut world = HittableList::new();
 
-    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(Perlin::new(&mut rng), 4.0));
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(&mut rng, 4.0));
 
     world.add(Arc::new(Sphere::new_stationary(
         Point3::new(0.0, -1000.0, 0.0),
@@ -360,7 +359,7 @@ fn simple_light() {
 
     let mut world = HittableList::new();
 
-    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(Perlin::new(&mut rng), 4.0));
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(&mut rng, 4.0));
 
     world.add(Arc::new(Sphere::new_stationary(
         Point3::new(0.0, -1000.0, 0.0),
