@@ -1,4 +1,6 @@
-#[derive(Clone, Copy, Debug)]
+use std::ops::Add;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Interval {
     pub min: f64,
     pub max: f64,
@@ -44,5 +46,24 @@ impl Interval {
 
     pub fn surrounds(&self, x: f64) -> bool {
         self.min < x && x < self.max
+    }
+}
+
+impl Add<f64> for Interval {
+    type Output = Self;
+
+    fn add(self, displacement: f64) -> Self {
+        Self {
+            min: self.min + displacement,
+            max: self.max + displacement,
+        }
+    }
+}
+
+impl Add<Interval> for f64 {
+    type Output = Interval;
+
+    fn add(self, interval: Interval) -> Interval {
+        interval + self
     }
 }

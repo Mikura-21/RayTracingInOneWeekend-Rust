@@ -52,3 +52,39 @@ pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord>;
     fn bounding_box(&self) -> Aabb;
 }
+
+pub struct Translate {
+    object: HittablePtr,
+    offset: Vec3,
+    bbox: Aabb,
+}
+
+impl Translate {
+    pub fn new(object: HittablePtr, offset: Vec3) -> Self {
+        let bbox = object.bounding_box() + offset;
+        Self {
+            object,
+            offset,
+            bbox,
+        }
+    }
+}
+
+impl Hittable for Translate {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        // Move the ray backwards by the offset
+        let offset_r = Ray::new(r.orig - self.offset, r.dir, r.time);
+
+        // Determine wheter an intersection exists along the offset ray (and if so, where)
+        let mut rec = self.object.hit(&offset_r, ray_t)?;
+
+        // Move the intesection point forwards by the offset
+        rec.p += self.offset;
+
+        Some(rec)
+    }
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox
+    }
+}
