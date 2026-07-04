@@ -21,6 +21,7 @@ mod vec3;
 use crate::bvh::BvhNode;
 use crate::camera::Camera;
 use crate::color::Color;
+use crate::hittable::{RotateY, Translate};
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, MaterialPtr, Metal};
 use crate::quad::{Quad, make_box};
@@ -461,17 +462,23 @@ fn cornell_box() {
         white.clone(),
     )));
 
-    world.add(Arc::new(make_box(
-        Point3::new(130.0, 0.0, 65.0),
-        Point3::new(295.0, 165.0, 230.0),
+    let box1 = Arc::new(make_box(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 330.0, 165.0),
         white.clone(),
-    )));
+    ));
+    let box1 = Arc::new(RotateY::new(box1, 15.0));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+    world.add(box1);
 
-    world.add(Arc::new(make_box(
-        Point3::new(265.0, 0.0, 295.0),
-        Point3::new(430.0, 330.0, 460.0),
+    let box2 = Arc::new(make_box(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 165.0, 165.0),
         white.clone(),
-    )));
+    ));
+    let box2 = Arc::new(RotateY::new(box2, -18.0));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+    world.add(box2);
 
     let aspect_ratio = 1.0;
     let image_width: usize = 600;
