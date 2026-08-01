@@ -22,6 +22,7 @@ mod vec3;
 use crate::bvh::BvhNode;
 use crate::camera::Camera;
 use crate::color::Color;
+use crate::constant_medium::ConstantMedium;
 use crate::hittable::{RotateY, Translate};
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, MaterialPtr, Metal};
@@ -512,8 +513,111 @@ fn cornell_box() {
     cam.render(&world);
 }
 
+fn cornell_smoke() {
+    let mut world = HittableList::new();
+
+    let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::from_color(Color::new(7.0, 7.0, 7.0)));
+
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(113.0, 554.0, 127.0),
+        Vec3::new(342.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 305.0),
+        light,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 555.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white.clone(),
+    )));
+
+    let box1 = Arc::new(make_box(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    ));
+    let box1 = Arc::new(RotateY::new(box1, 15.0));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+
+    let box2 = Arc::new(make_box(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 165.0, 165.0),
+        white.clone(),
+    ));
+    let box2 = Arc::new(RotateY::new(box2, -18.0));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+
+    world.add(Arc::new(ConstantMedium::from_color(
+        box1,
+        0.01,
+        Color::new(0.0, 0.0, 0.0),
+    )));
+    world.add(Arc::new(ConstantMedium::from_color(
+        box2,
+        0.01,
+        Color::new(1.0, 1.0, 1.0),
+    )));
+
+    let aspect_ratio = 1.0;
+    let image_width: usize = 600;
+    let samples_per_pixel: usize = 200;
+    let max_depth: usize = 50;
+    let background = Color::new(0.0, 0.0, 0.0);
+
+    let vfov = 40.0;
+    let lookfrom = Point3::new(278.0, 278.0, -800.0);
+    let lookat = Point3::new(278.0, 278.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+
+    let defocus_angle = 0.0;
+    let focus_dist = 10.0;
+
+    let cam = Camera::new(
+        aspect_ratio,
+        image_width,
+        samples_per_pixel,
+        max_depth,
+        background,
+        vfov,
+        lookfrom,
+        lookat,
+        vup,
+        defocus_angle,
+        focus_dist,
+    );
+
+    cam.render(&world);
+}
+
 fn main() {
-    match 7 {
+    match 8 {
         1 => bouncing_spheres(),
         2 => checkered_spheres(),
         3 => earth(),
@@ -521,6 +625,7 @@ fn main() {
         5 => quads(),
         6 => simple_light(),
         7 => cornell_box(),
+        8 => cornell_smoke(),
         _ => {}
     }
 }
