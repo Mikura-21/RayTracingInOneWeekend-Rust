@@ -1,6 +1,7 @@
 use rand::rngs::SmallRng;
 use rand::{RngExt, SeedableRng};
 use std::sync::Arc;
+use std::time::Instant;
 
 mod aabb;
 mod bvh;
@@ -758,6 +759,8 @@ fn final_scene(image_width: usize, samples_per_pixel: usize, max_depth: usize) {
 }
 
 fn main() {
+    let start = Instant::now();
+
     match 0 {
         1 => bouncing_spheres(),
         2 => checkered_spheres(),
@@ -771,4 +774,5 @@ fn main() {
         10 => final_scene(400, 250, 10),
         _ => final_scene(400, 250, 4),
     }
+    eprintln!("実行時間: {:.3?}", start.elapsed());
 }

@@ -1,7 +1,6 @@
 use rand::rngs::SmallRng;
 use rand::{RngExt, SeedableRng};
 use rayon::prelude::*;
-use std::io::{self, Write};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::color;

@@ -54,7 +54,7 @@ impl Quad {
 }
 
 impl Hittable for Quad {
-    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord<'_>> {
         let denom = self.normal.dot(r.dir);
 
         // No hit if the ray is parallel to the plane.
@@ -86,7 +86,7 @@ impl Hittable for Quad {
             beta,
             r,
             self.normal,
-            Arc::clone(&self.mat),
+            self.mat.as_ref(),
         ))
     }
 

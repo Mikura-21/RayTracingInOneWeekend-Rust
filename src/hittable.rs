@@ -2,22 +2,23 @@ use std::sync::Arc;
 
 use crate::aabb::Aabb;
 use crate::interval::Interval;
-use crate::material::MaterialPtr;
+use crate::material::{Material, MaterialPtr};
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 #[derive(Clone)]
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Point3,
     pub t: f64,
     pub u: f64,
     pub v: f64,
     pub normal: Vec3,
     pub front_face: bool,
-    pub mat: MaterialPtr,
+    pub mat: &'a (dyn Material + Send + Sync),
+    // pub type MaterialPtr = Arc<dyn Material + Send + Sync>
+    // Arc<dyn Material + Send + Sync + ’static, Global>,
 }
-
-impl HitRecord {
+impl<'a> HitRecord<'a> {
     pub fn new(
         p: Point3,
         t: f64,
@@ -25,7 +26,7 @@ impl HitRecord {
         v: f64,
         r: &Ray,
         outward_normal: Vec3,
-        mat: MaterialPtr,
+        mat: &'a (dyn Material + Send + Sync),
     ) -> Self {
         let front_face = r.dir.dot(outward_normal) < 0.0;
         let normal = if front_face {
@@ -49,7 +50,7 @@ impl HitRecord {
 pub type HittablePtr = Arc<dyn Hittable + Send + Sync>;
 
 pub trait Hittable: Send + Sync {
-    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord>;
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord<'_>>;
     fn bounding_box(&self) -> Aabb;
 }
 
@@ -71,7 +72,7 @@ impl Translate {
 }
 
 impl Hittable for Translate {
-    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord<'_>> {
         // Move the ray backwards by the offset
         let offset_r = Ray::new(r.orig - self.offset, r.dir, r.time);
 
@@ -139,7 +140,7 @@ impl RotateY {
 }
 
 impl Hittable for RotateY {
-    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord<'_>> {
         // Transform the ray from world space to object space.
         let origin = Point3::new(
             self.cos_theta * r.orig.x - self.sin_theta * r.orig.z,

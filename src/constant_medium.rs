@@ -37,7 +37,7 @@ impl ConstantMedium {
 }
 
 impl Hittable for ConstantMedium {
-    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord<'_>> {
         let mut rec1 = self
             .boundary
             .hit(r, Interval::new(f64::NEG_INFINITY, f64::INFINITY))?;
@@ -73,7 +73,7 @@ impl Hittable for ConstantMedium {
 
         let normal = Vec3::new(1.0, 0.0, 0.0); // arbitrary
         let front_face = true; // also arbitrary
-        let mat = Arc::clone(&self.phase_function);
+        let mat = self.phase_function.as_ref();
 
         Some(HitRecord::new(p, t, 0.0, 0.0, r, normal, mat))
     }
