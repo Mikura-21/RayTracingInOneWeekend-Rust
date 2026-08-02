@@ -1,6 +1,8 @@
 use rand::rngs::SmallRng;
 use rand::{RngExt, SeedableRng};
+use rayon::prelude::*;
 use std::io::{self, Write};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::color;
 use crate::color::Color;
@@ -125,20 +127,35 @@ impl Camera {
     pub fn render(&self, world: &dyn Hittable) {
         println!("P3\n{} {}\n255", self.image_width, self.image_height);
 
-        let mut rng = SmallRng::from_rng(&mut rand::rng());
+        let pixel_count = self.image_width * self.image_height;
+        let mut pixels = vec![Color::zero(); pixel_count];
 
-        for j in 0..self.image_height {
-            eprint!("\rScanlines remaining: {} ", self.image_height - j);
-            io::stderr().flush().unwrap();
-            for i in 0..self.image_width {
-                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-                for _ in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i, j, &mut rng);
-                    pixel_color += Self::ray_color(self, &r, self.max_depth, world, &mut rng);
-                }
-                color::write_color(&(self.pixel_samples_scale * pixel_color));
-            }
+        let completed_rows = AtomicUsize::new(0);
+
+        pixels
+            .par_chunks_mut(self.image_width)
+            .enumerate()
+            .for_each_init(
+                || SmallRng::from_rng(&mut rand::rng()),
+                |rng, (j, row)| {
+                    for (i, output_pixel) in row.iter_mut().enumerate() {
+                        let mut pixel_color = Color::zero();
+                        for _ in 0..self.samples_per_pixel {
+                            let r = self.get_ray(i, j, rng);
+                            pixel_color += Self::ray_color(self, &r, self.max_depth, world, rng);
+                        }
+                        *output_pixel = self.pixel_samples_scale * pixel_color;
+                    }
+
+                    let completed = completed_rows.fetch_add(1, Ordering::Relaxed) + 1;
+                    eprint!("\rScanlines remaining: {} ", self.image_height - completed);
+                },
+            );
+
+        for pixel_color in pixels {
+            color::write_color(&pixel_color);
         }
+
         eprintln!("\nDone.                 ");
     }
 
