@@ -9,7 +9,7 @@ use crate::ray::Ray;
 
 pub struct BvhNode {
     left: HittablePtr,
-    right: HittablePtr,
+    right: Option<HittablePtr>,
     bbox: Aabb,
 }
 
@@ -31,17 +31,14 @@ impl BvhNode {
 
         let object_span = objects.len();
 
-        let (left, right): (HittablePtr, HittablePtr) = match object_span {
-            1 => {
-                let obj = Arc::clone(&objects[0]);
-                (Arc::clone(&obj), obj)
-            }
-            2 => (Arc::clone(&objects[0]), Arc::clone(&objects[1])),
+        let (left, right): (HittablePtr, Option<HittablePtr>) = match object_span {
+            1 => (Arc::clone(&objects[0]), None),
+            2 => (Arc::clone(&objects[0]), Some(Arc::clone(&objects[1]))),
             _ => {
                 let mid = object_span / 2;
                 (
                     Arc::new(Self::from_objects(&mut objects[..mid])),
-                    Arc::new(Self::from_objects(&mut objects[mid..])),
+                    Some(Arc::new(Self::from_objects(&mut objects[mid..]))),
                 )
             }
         };
@@ -57,11 +54,14 @@ impl Hittable for BvhNode {
         }
 
         let hit_left = self.left.hit(r, ray_t);
+        let Some(right) = &self.right else {
+            return hit_left;
+        };
         let max_for_right = match &hit_left {
             Some(hit) => hit.t,
             None => ray_t.max,
         };
-        let hit_right = self.right.hit(r, Interval::new(ray_t.min, max_for_right));
+        let hit_right = right.hit(r, Interval::new(ray_t.min, max_for_right));
 
         hit_right.or(hit_left)
     }
@@ -72,8 +72,8 @@ impl Hittable for BvhNode {
 }
 
 fn box_compare(a: &HittablePtr, b: &HittablePtr, axis: usize) -> Ordering {
-    let b_axis = a.bounding_box().axis_interval(axis).min;
-    let a_axis = b.bounding_box().axis_interval(axis).min;
+    let a_axis = a.bounding_box().axis_interval(axis).min;
+    let b_axis = b.bounding_box().axis_interval(axis).min;
 
     a_axis.partial_cmp(&b_axis).unwrap_or(Ordering::Equal)
 }
